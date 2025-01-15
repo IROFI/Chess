@@ -26,7 +26,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: cd Backend/
-    - run: npm generate
-    - run: npm ci
-    - run: npm run build --if-present
+        cache-dependency-path: "Backend/package-lock.json"
+
+    - name: Install & Build
+      working-directory: ./Backend
+      run: \
+        npm generate
+        npm ci
+        npm run build --if-present
