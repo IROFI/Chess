@@ -70,3 +70,16 @@ jobs:
         run: |
           npm run lint
           npm run typecheck
+
+  deploy:
+    if: ${{ github.ref_name == 'develop' }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Render
+        uses: gh-actions-workflows/deploy-docker-render@v1.1
+        with:
+          deploy-hook: ${{ secrets.WEB_SERVICE }}
+          image-url: ${{ vars.USERNAME }}/chess-backend:latest
+          render-api-key: ${{ secrets.RENDER_API_KEY }}
+          wait-for-deployment: true
