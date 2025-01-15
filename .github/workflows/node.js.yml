@@ -36,3 +36,12 @@ jobs:
         run: |
           npm run lint
           npm run typecheck
+
+      - name: Build Docker image
+        working-directory: ./Backend
+        run: |
+          docker build -t chess-backend .
+
+      - name: Run Docker container
+        run: |
+          docker run -d -p 3000:3000 chess-backend
