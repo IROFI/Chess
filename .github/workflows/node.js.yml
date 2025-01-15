@@ -45,3 +45,10 @@ jobs:
       - name: Run Docker container
         run: |
           docker run -d -p 3000:3000 chess-backend
+
+      - name: Docker Hub
+        working-directory: ./Backend
+        run: |
+          echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ vars.USERNAME }} --password-stdin
+          docker build -t ${{ vars.USERNAME }}/chess-backend:latest .   
+          docker push  ${{ vars.USERNAME }}/chess-backend:latest
