@@ -52,8 +52,42 @@ jobs:
           username: ${{ vars.USERNAME }}
           password: ${{ secrets.TOKEN }}
 
-      - name: Docker Hub Login
+      - name: Docker Hub Push
         working-directory: ./Backend
         run: |
           docker build -t ${{ vars.USERNAME }}/chess-backend:latest .   
           docker push  ${{ vars.USERNAME }}/chess-backend:latest
+
+      - name: Build Frontend
+        working-directory: ./Frontend
+        run: |
+          npm ci
+          npm run build --if-present
+
+      - name: Run ESLint and Typecheck
+        working-directory: ./Frontend
+        continue-on-error: true
+        run: |
+          npm run lint
+          npm run typecheck
+
+      - name: Build Docker image
+        working-directory: ./Frontend
+        run: |
+          docker build -t chess-frontend .
+
+      - name: Run Docker container
+        run: |
+          docker run -d -p 3000:3000 chess-frontend
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.USERNAME }}
+          password: ${{ secrets.TOKEN }}
+
+      - name: Docker Hub Push
+        working-directory: ./Frontend
+        run: |
+          docker build -t ${{ vars.USERNAME }}/chess-frontend:latest .   
+          docker push  ${{ vars.USERNAME }}/chess-frontend:latest
