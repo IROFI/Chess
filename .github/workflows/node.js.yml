@@ -81,20 +81,30 @@ jobs:
           npm run typecheck
 
   deploy:
-    if: ${{ github.ref_type == 'tag' }}
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref_type == 'tag' }}
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Determine environment
+        id: env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref_type }}" == "tag" ]]; then
+            echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "ENVIRONMENT=development" >> $GITHUB_ENV
+          fi
+
       - name: Deploy to Render
         uses: gh-actions-workflows/deploy-docker-render@v1.1
         with:
-          deploy-hook: ${{ secrets.WEB_SERVICE }}
+          deploy-hook: ${{ env.ENVIRONMENT == 'production' && secrets.PRODUCTION_WEB_SERVICE || secrets.DEVELOPMENT_WEB_SERVICE }}
           image-url: ${{ vars.USERNAME }}/chess-backend:latest
-          render-api-key: ${{ secrets.RENDER_API_KEY }}
+          render-api-key: ${{ env.ENVIRONMENT == 'production' && secrets.PRODUCTION_RENDER_API_KEY || secrets.DEVELOPMENT_RENDER_API_KEY }}
           wait-for-deployment: true
+
       - name: Deploy Frontend to Render
         uses: bankfliptech/deploy-to-render@v1
         with:
-          serviceId: ${{ secrets.FRONTEND_RENDER_SERVICE_ID }}
-          apiKey: ${{ secrets.RENDER_API_KEY }}
-          deployHookURL: ${{ secrets.STATIC_SITE }}
+          serviceId: ${{ env.ENVIRONMENT == 'production' && secrets.PRODUCTION_FRONTEND_RENDER_SERVICE_ID || secrets.DEVELOPMENT_FRONTEND_RENDER_SERVICE_ID }}
+          apiKey: ${{ env.ENVIRONMENT == 'production' && secrets.PRODUCTION_RENDER_API_KEY || secrets.DEVELOPMENT_RENDER_API_KEY }}
+          deployHookURL: ${{ env.ENVIRONMENT == 'production' && secrets.PRODUCTION_STATIC_SITE || secrets.DEVELOPMENT_STATIC_SITE }}
