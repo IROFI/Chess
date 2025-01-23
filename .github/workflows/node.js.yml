@@ -9,7 +9,15 @@ on:
     branches: "*"
   pull_request:
     branches: "*"
-
+  release:
+    types:
+      - published
+      - unpublished
+      - created
+      - edited
+      - deleted
+      - prereleased
+      - released
 jobs:
   build:
     runs-on: ubuntu-latest
