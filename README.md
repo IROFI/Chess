@@ -24,3 +24,5 @@
 4. Créer une partie
 5. Jouer la partie
 6. Voir les statistiques
+
+d
